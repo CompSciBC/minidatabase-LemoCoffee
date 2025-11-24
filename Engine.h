@@ -51,12 +51,6 @@ struct Engine {
     bool deleteById(int id) {
         int* rid = idIndex.find(id);
 
-        std::clog << "Pre-Remove:  ";
-        for (Record i : heap) {
-            std::clog << i.first << " " << i.last << ", ";
-        }
-        std::clog << std::endl;
-
         if (rid == nullptr) return false;
 
         vector<int>* lastIds = lastIndex.find(toLower(heap[*rid].last));
@@ -64,12 +58,6 @@ struct Engine {
 
         idIndex.erase(id);
         heap.erase(heap.begin() + *rid);
-
-        std::clog << "Post-Remove: ";
-        for (Record i : heap) {
-            std::clog << i.first << " " << i.last << ", ";
-        }
-        std::clog << std::endl;
 
         return true;
     }
@@ -113,7 +101,7 @@ struct Engine {
 
         vector<const Record*> output; 
 
-        lastIndex.rangeApply(toLower(prefix), toLower(prefix + "z"), [&](string& k, vector<int>& v) {
+        lastIndex.rangeApply(toLower(prefix), toLower(prefix + "}"), [&](string& k, vector<int>& v) {
             for (int i : v)
                 output.push_back(&heap[i]);
         });
