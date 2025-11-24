@@ -2,7 +2,8 @@
 #define ENGINE_H
 
 #include <iostream>   
-#include <vector>     
+#include <vector>    
+#include <algorithm> 
 #include "BST.h"      
 #include "Record.h"
 //add header files as needed
@@ -27,31 +28,87 @@ struct Engine {
     // Inserts a new record and updates both indexes.
     // Returns the record ID (RID) in the heap.
     int insertRecord(const Record &recIn) {
-        //TODO
+        int rid = heap.size();
+
+        idIndex.insert(recIn.id, rid);
+
+        vector<int>* lastNameRids = lastIndex.find(toLower(recIn.last));
+        if (lastNameRids == nullptr) {
+            lastNameRids = new vector<int>();
+            lastNameRids->push_back(rid);
+            lastIndex.insert(toLower(recIn.last), *lastNameRids);
+        } else {
+            lastNameRids->push_back(rid);
+        }
+
+        heap.push_back(recIn);
+        
+        return rid;
     }
 
     // Deletes a record logically (marks as deleted and updates indexes)
     // Returns true if deletion succeeded.
     bool deleteById(int id) {
-        //TODO
+        int* rid = idIndex.find(id);
+
+        if (rid == nullptr) return false;
+
+        vector<int>* lastIds = lastIndex.find(toLower(heap[*rid].last));
+        lastIds->erase(std::remove(lastIds->begin(), lastIds->end(), *rid));
+
+        idIndex.erase(id);
+        heap.erase(heap.begin() + *rid);
+
+        return true;
     }
 
     // Finds a record by student ID.
     // Returns a pointer to the record, or nullptr if not found.
     // Outputs the number of comparisons made in the search.
     const Record *findById(int id, int &cmpOut) {
-        //TODO    }
+        idIndex.resetMetrics();
+
+        int* rid = idIndex.find(id);
+        cmpOut = idIndex.comparisons;
+        
+        if (rid == nullptr) return nullptr;
+
+        Record* rec = &heap[*rid];
+        
+        return rec;
+    }
 
     // Returns all records with ID in the range [lo, hi].
     // Also reports the number of key comparisons performed.
     vector<const Record *> rangeById(int lo, int hi, int &cmpOut) {
-        //TODO
+        idIndex.resetMetrics();
+
+        vector<const Record*> output; 
+
+        idIndex.rangeApply(lo, hi, [&](int& k, int& v) {
+            output.push_back(&heap[v]);
+        });
+
+        cmpOut = idIndex.comparisons;
+
+        return output;
     }
 
     // Returns all records whose last name begins with a given prefix.
     // Case-insensitive using lowercase comparison.
     vector<const Record *> prefixByLast(const string &prefix, int &cmpOut) {
-        //TODO
+        lastIndex.resetMetrics();
+
+        vector<const Record*> output; 
+
+        lastIndex.rangeApply(toLower(prefix), toLower(prefix + "}"), [&](string& k, vector<int>& v) {
+            for (int i : v)
+                output.push_back(&heap[i]);
+        });
+
+        cmpOut = lastIndex.comparisons;
+
+        return output;
     }
 };
 

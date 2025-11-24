@@ -1,0 +1,2 @@
+This project was really easy, just a simple implementation using a data structure!
+The only thing I really familiarized myself with is lambda functions, something I've worked with in other languages, but understanding scope in C++ is a little bit different, but ultimately I was able to get it :D
